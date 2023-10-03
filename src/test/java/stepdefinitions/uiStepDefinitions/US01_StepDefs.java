@@ -5,6 +5,8 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.junit.Assert;
 import org.openqa.selenium.interactions.Actions;
 import pages.CommonLocator;
@@ -15,7 +17,11 @@ import utilities.Driver;
 import java.io.IOException;
 import java.sql.*;
 
+import static base_url.BaseUrl.spec;
+import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
+import static stepdefinitions.uiStepDefinitions.CommonStepDefs.fakeSsn;
+import static stepdefinitions.uiStepDefinitions.US13_StepDefs.fakeUsername;
 import static utilities.WaitUtils.waitFor;
 
 public class US01_StepDefs {
@@ -27,6 +33,8 @@ public class US01_StepDefs {
     Faker faker = new Faker();
     Connection connection;
     ResultSet resultSet;
+    Response response;
+
 
     @And("user clicks on register link")
     public void userClicksOnRegisterLink() {
@@ -143,7 +151,7 @@ public class US01_StepDefs {
     @When("get guest user via username {string}")
     public void getGuestUserViaUsername(String username) throws SQLException {
 
-        Statement statement = connection.createStatement();
+
         String query = "select * from guest_user where username = 'Raven'";
         resultSet = DBUtils.executeQuery(query);
         resultSet.next();
@@ -173,6 +181,45 @@ public class US01_StepDefs {
 //    public void closeTheConnection() throws SQLException {
 //        resultSet.close();
 //        connection.close();
+
+
+
+    @Given("send get request to get all guest users")
+    public void sendGetRequestToGetAllGuestUsers() {
+
+        spec.pathParams("first","guestUser","second","getAll").queryParams("size","10000");
+        response = given(spec).get("{first}/{second}");
+        response.prettyPrint();
+
+
+    }
+
+    @Then("validate  username {string} date_of_birth {string}   birth_place {string}   name {string} phone_number {string}  ssn_number {string} surname {string} by API")
+    public void validateUsernameDate_of_birthBirth_placeNamePhone_numberSsn_numberSurnameByAPI(String username, String birthDay, String birthPlace, String name, String phoneNumber, String ssn, String surname) {
+
+        JsonPath jsonPath = response.jsonPath();
+        String actUsername = jsonPath.getList("content.findAll{it.username=='" + username + "'}.username").get(0).toString();
+        String actSsn = jsonPath.getList("content.findAll{it.username=='" + username + "'}.ssn").get(0).toString();
+        String actName = jsonPath.getList("content.findAll{it.username=='" + username + "'}.name").get(0).toString();
+        String actSurname = jsonPath.getList("content.findAll{it.username=='" + username + "'}.surname").get(0).toString();
+        String actBirthDay= jsonPath.getList("content.findAll{it.username=='" + username + "'}.birthDay").get(0).toString();
+        String actBirthPlace= jsonPath.getList("content.findAll{it.username=='" + username + "'}.birthPlace").get(0).toString();
+        String actPhoneNumber= jsonPath.getList("content.findAll{it.username=='" + username + "'}.phoneNumber").get(0).toString();
+
+
+
+        assertEquals(200, response.statusCode());
+        assertEquals(username, actUsername);
+        assertEquals(ssn, actSsn);
+        assertEquals(name, actName);
+        assertEquals(surname, actSurname);
+        assertEquals(birthDay, actBirthDay);
+        assertEquals(birthPlace, actBirthPlace);
+        assertEquals(phoneNumber, actPhoneNumber);
+
+
 //    }
 
+
+    }
 }

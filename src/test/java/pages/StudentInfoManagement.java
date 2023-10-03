@@ -37,4 +37,10 @@ public class StudentInfoManagement {
 
     @FindBy(xpath = "//*[@id='root']/div/main/div/div[1]/div[3]/div/h5")
     public WebElement studentInfoList;
+
+    @FindBy(xpath = "//*[(text()='Menu')]")
+    public WebElement menuButton;
+
+    @FindBy(xpath = "/html/body/div[3]/div[2]/div/a[1]")
+    public WebElement studentInfoManagementButton;
 }

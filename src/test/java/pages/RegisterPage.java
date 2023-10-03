@@ -23,6 +23,8 @@ public class RegisterPage {
 
     @FindBy(xpath = "(//input)[5]")
     public WebElement femaleRadioButton;
+    @FindBy(xpath = "//input[@value='MALE']")
+    public WebElement maleRadioButton;
 
     @FindBy(xpath = "(//input)[7]")
     public WebElement dateOfBirth;
@@ -35,6 +37,8 @@ public class RegisterPage {
 
     @FindBy(xpath = "(//button)[3]")
     public WebElement registerButton;
+    @FindBy(xpath = "//button[text()='Register']")
+    public WebElement registerButton1;
 
     @FindBy(xpath = "//div[contains(text(), 'Guest User registered.')]")
     public WebElement userRegisteredText;
@@ -50,6 +54,14 @@ public class RegisterPage {
 
     @FindBy(xpath = "//div[contains(text(), 'At least 8 characters')]")
     public WebElement invalidPassword;
+    @FindBy(id="name")
+    public WebElement nameInput;
+    @FindBy(id= "password")
+    public WebElement passwordInput;
+    @FindBy(xpath = "//div[@role='alert']")
+    public WebElement alertMessage;
+
+
 
 
 }

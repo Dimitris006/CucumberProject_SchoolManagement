@@ -52,7 +52,7 @@ public class US16_StepDefs {
     }
     @Then("verify Date is visible")
     public void verify_date_is_visible() {
-        waitFor(3);
+        waitFor(2);
         BrowserUtils.verifyElementDisplayed(deanContactGetAllPage.verifyDateIsSeen);
     }
     @Then("verify Subject is visible")

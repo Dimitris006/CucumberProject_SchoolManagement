@@ -44,6 +44,13 @@ Feature: Admins should be able to see and update Deans
       | name   | surname  | birth_place | gender | birth_day  | phone_number | ssn         | username |
       | Serena | Williams | Istanbul    | 1      | 1234-11-11 | 181-081-6739 | 253-85-9497 | 123      |
 
+  @API05-TC01 @Api_admin
+
+  Scenario: Validate Admins can see registered Dean's Name, Gender, Phone Number, SSN and User Name information of Deans
+
+    Given send get request to get all dean users
+    Then validate Dean's details are seen
+
 
   @UI05_TC03
 
@@ -76,12 +83,25 @@ Feature: Admins should be able to see and update Deans
 
     @DB05_TC03
 
-    Scenario: TC03_Admin should be able to update Deans
+    Scenario: Admin should be able to update Deans
 
       Given connect to database
       When get updated Dean via username
       Then validate Dean's details are updated
       And close the connection
+
+    @API05-TC03 @Api_admin
+
+    Scenario: Validate Admins can update Deans
+
+      Given send get request to get all dean users for API test
+      Then validate Dean's details are updated by API
+
+
+
+
+
+
 
 
 

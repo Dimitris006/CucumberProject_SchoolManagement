@@ -4,6 +4,9 @@ import com.github.javafaker.Faker;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import pages.CommonLocator;
@@ -14,14 +17,26 @@ import utilities.BrowserUtils;
 import utilities.JSUtils;
 import utilities.WaitUtils;
 
+import java.sql.ResultSet;
+import java.util.List;
+
+import static base_url.BaseUrl.spec;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static stepdefinitions.uiStepDefinitions.CommonStepDefs.*;
+import static stepdefinitions.uiStepDefinitions.CommonStepDefs.fakerFormattedPhoneNumber;
 
 public class US10_StepDef {
+
     ViceDeanLessonProgram viceDeanLessonProgram = new ViceDeanLessonProgram();
     ViceDean_LessonManagementPage viceDeanLessonManagementPage = new ViceDean_LessonManagementPage();
     ViceDean_AdminManagementPage viceDeanAdminManagementPage = new ViceDean_AdminManagementPage();
     CommonLocator commonLocator = new CommonLocator();
     Faker faker = new Faker();
+    Response response;
+
 
     @Given("click lesson management")
     public void click_lesson_management() {
@@ -87,7 +102,40 @@ public class US10_StepDef {
 
 
     }
-
-
-
+    @Given("choose Lesson EmillyLesson")
+    public void choose_lesson_EmillyLesson() {
+        viceDeanLessonManagementPage.getSelectionChooseLesson.sendKeys("EmillyLesson" + Keys.ENTER);
+        WaitUtils.waitFor(2);
+    }
+    @Given("Send get all lesson program request on API")
+    public void Send_get_all_lesson_program_request_on_api() {
+        //https://managementonschools.com/app/lessonPrograms/getAll
+        spec.pathParams("first","lessonPrograms","second","getAll");
+        response = given(spec).get("{first}/{second}")
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("lessonPrograms.size()", greaterThan(0)).extract().response();
+        // response.prettyPrint();
+    }
+    @Then("filter lessons programs by id and verify")
+    public void filter_lessons_programs_by_id_and_verify() {
+        //lessonPrograms/getById/{id}
+        response= given(spec).pathParams(
+                        "first",
+                        "lessonPrograms",
+                        "second",
+                        "getById",
+                        "third",
+                        "1081").get("/{first}/{second}/{third}")
+                .then()
+                .statusCode(200)
+                .body("startTime",equalTo("13:00:00"))//when is out of Array we will use equalTo()
+                .body("stopTime",equalTo("14:00:00"))
+                .body("lessonName.lessonName",hasItem("EmillyLesson"))//when is in the Array we will use hasItem()
+                .body("day",equalTo("MONDAY"))
+                .extract().response();
+        // We use .extract().response() to make the response object accept the assertions we make
+        response.prettyPrint();
+    }
 }

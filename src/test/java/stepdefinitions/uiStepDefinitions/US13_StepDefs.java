@@ -5,22 +5,21 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.restassured.path.json.JsonPath;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 import pages.CommonLocator;
 import pages.CreateStudentPage;
 import pages.ViceDeanTeacherManagementPage;
+import pojos.CreateTeacherPojo;
 import utilities.*;
-
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-
 import static base_url.BaseUrl.spec;
+import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -43,6 +42,8 @@ public class US13_StepDefs {
     public Statement statement;
     public ResultSet resultSet;
     Response response;
+    CreateTeacherPojo createTeacherPojo;
+    int userId;
 
     @Given("click TeacherManagementLink")
     public void click_teacher_management_link() {
@@ -115,10 +116,10 @@ public class US13_StepDefs {
     @Given("enter Teacher valid phone number")
     public void enter_teacher_valid_phone_number() {
         // Generate a fake phone number as a string
-       String fakePhoneNumber = faker.phoneNumber().phoneNumber();
+        String fakePhoneNumber = faker.phoneNumber().phoneNumber();
 
         // Format the phone number as XXX-XXX-XXXX
-         formattedPhoneNumber = BrowserUtils.formatPhoneNumber(fakePhoneNumber);
+        formattedPhoneNumber = BrowserUtils.formatPhoneNumber(fakePhoneNumber);
 
         commonLocator.phoneNumberField.sendKeys(formattedPhoneNumber);
         WaitUtils.waitFor(3);
@@ -126,8 +127,8 @@ public class US13_StepDefs {
 
     @Given("select Teacher Male Gender")
     public void select_teacher_male_gender() {
-        genderDB= "0";
-        genderAPI="MALE";
+        genderDB = "0";
+        genderAPI = "MALE";
         commonLocator.genderMale.click();
         WaitUtils.waitFor(2);
 
@@ -177,9 +178,12 @@ public class US13_StepDefs {
     @When("get teacher user via username {string}")
     public void get_teacher_user_via_username(String string) throws SQLException {
         statement = connection.createStatement();
-        String sqlQuery = "select * from \"public\".teacher where username='"+fakeUsername+"'";
+        String sqlQuery = "select * from \"public\".teacher where username='" + fakeUsername + "'";
+
+
         System.out.println(sqlQuery);
-        resultSet=statement.executeQuery(sqlQuery);
+        resultSet = statement.executeQuery(sqlQuery);
+
     }
 
     @Then("validate the credentials for teacher")
@@ -187,20 +191,21 @@ public class US13_StepDefs {
 
 
         resultSet.next();
-            String actUsername = resultSet.getString("username");
-            String actBirthDay=resultSet.getString("birth_day");
-            String actBirth_place = resultSet.getString("birth_place");
-            String actGender = resultSet.getString("gender");
-            String actName = resultSet.getString("name");
-            String actPhone_number = resultSet.getString("phone_number");
-            String actSsn = resultSet.getString("ssn");
-            String actSurname = resultSet.getString("surname");
-            String actEmail = resultSet.getString("email");
-            String actIsAdvisor = resultSet.getString("is_advisor");
-           SimpleDateFormat expectedDateFormat= new SimpleDateFormat("dd-MM-yyyy");
+        String actUsername = resultSet.getString("username");
+        String actBirthDay = resultSet.getString("birth_day");
+        String actBirth_place = resultSet.getString("birth_place");
+        String actGender = resultSet.getString("gender");
+        String actName = resultSet.getString("name");
+        String actPhone_number = resultSet.getString("phone_number");
+        String actSsn = resultSet.getString("ssn");
+        String actSurname = resultSet.getString("surname");
+        String actEmail = resultSet.getString("email");
+        String actIsAdvisor = resultSet.getString("is_advisor");
+        SimpleDateFormat expectedDateFormat = new SimpleDateFormat("dd-MM-yyyy");
         String formattedExpectedDate = expectedDateFormat.format(expectedDateFormat.parse("25-05-1988"));
-        String formattedActualDate= new SimpleDateFormat("dd-MM-yyyy").format(new SimpleDateFormat("yyyy-MM-dd").parse(actBirthDay));
+        String formattedActualDate = new SimpleDateFormat("dd-MM-yyyy").format(new SimpleDateFormat("yyyy-MM-dd").parse(actBirthDay));
         assertEquals(formattedExpectedDate, formattedActualDate);
+
             assertEquals(fakeBirthPlace, actBirth_place);
             assertEquals(genderDB, actGender);
             assertEquals(fakeName, actName);
@@ -211,46 +216,83 @@ public class US13_StepDefs {
             assertEquals(fakeEmail, actEmail);
             assertTrue(actIsAdvisor, true);
        }
+    @And("close the connection on dataBase")
+    public void closeTheConnectionOnDataBase() {
+        DBUtils.closeConnection();
+    }
+
+
+
+
     @Given("seng Get request to get teacher by getAll")
     public void sengGetRequestToGetTeacherByGetAll() {
-        https://managementonschools.com/app/teachers/getAll
-        spec.pathParams("first","teachers","second","getAll");
-        response= given(spec).get("{first}/{second}");
+        // https://managementonschools.com/app/teachers/getAll
+        spec.pathParams("first", "teachers", "second", "getAll");
+        response = given(spec).get("{first}/{second}");
+    }
+
+    @Given("create teacher with post request save")
+
+    public void create_teacher_with_post_request_save() {
+
+        // https://managementonschools.com/app/teachers/save
+
+//        https://managementonschools.com/app/teachers/save
+
+        createTeacherPojo = new CreateTeacherPojo();
+        createTeacherPojo.createTeacher();
+        response = given(spec)
+                .pathParams("first", "teachers", "second", "save")
+                .body(createTeacherPojo.createTeacherPayLoad())
+                .post("/{first}/{second}")
+                .then()
+                .statusCode(200)
+                .body("object.username", equalTo(createTeacherPojo.getUsername()))
+                .body("object.name", equalTo(createTeacherPojo.getName()))
+                .body("object.surname", equalTo(createTeacherPojo.getSurname()))
+                .body("object.email", equalTo(createTeacherPojo.getEmail()))
+                .body("object.gender", equalTo(createTeacherPojo.getGender()))
+                .body("object.birthPlace", equalTo(createTeacherPojo.getBirthPlace()))
+                .body("object.phoneNumber", equalTo(createTeacherPojo.getPhoneNumber()))
+                .body("object.ssn", equalTo(createTeacherPojo.getSocialSecurityNumber()))
+                .body("object.birthDay", equalTo(createTeacherPojo.getBirthday()))
+                .body("object.email", equalTo(createTeacherPojo.getEmail()))
+                .body("message", equalTo("Teacher saved successfully"))
+                .contentType(ContentType.JSON).extract().response();
+
         response.prettyPrint();
-    }
 
-    @Then("validate that teacher is created")
-    public void validateThatTeacherIsCreated() throws ParseException {
-        JsonPath jsonPath=response.jsonPath();
-      String actName=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.name").get(0).toString();
-      String actSurname=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.surname").get(0).toString();
-      String actBirthDay=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.birthDay").get(0).toString();
-      String actSsn=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.ssn").get(0).toString();
-      String actBirthPlace=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.birthPlace").get(0).toString();
-      String actPhoneNumber=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.phoneNumber").get(0).toString();
-      String actGender=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.gender").get(0).toString();
-      String actEmail=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.email").get(0).toString();
-      String actAdvisorTeacher=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.advisorTeacher").get(0).toString();
-      String actUsername=  jsonPath.getList("findAll{it.username=='"+fakeUsername+"'}.username").get(0).toString();
-
-      assertEquals(200,response.statusCode());
-      assertEquals(fakeName,actName);
-      assertEquals(fakeSurname,actSurname);
-        SimpleDateFormat expectedDateFormat= new SimpleDateFormat("dd-MM-yyyy");
-        String formattedExpectedDate = expectedDateFormat.format(expectedDateFormat.parse("25-05-1988"));
-        String formattedActualDate= new SimpleDateFormat("dd-MM-yyyy").format(new SimpleDateFormat("yyyy-MM-dd").parse(actBirthDay));
-      assertEquals(formattedExpectedDate,formattedActualDate);
-      assertEquals(fakeSsn,actSsn);
-      assertEquals(fakeBirthPlace,actBirthPlace);
-      assertEquals(formattedPhoneNumber,actPhoneNumber);
-      assertEquals(genderAPI,actGender);
-      assertEquals(fakeEmail,actEmail);
-      assertTrue(actAdvisorTeacher,true);
-      assertEquals(fakeUsername,actUsername);
+        //Update userId field global scope
+        userId = response.jsonPath().getInt("object.userId");
+        System.out.println("userId: " + userId);
 
     }
+    @Then("validate with get request that teacher is created")
+    public void validate_with_get_request_that_teacher_is_created () {
+
+        https:
+//managementonschools.com/app/teachers/getSavedTeacherById/1295
+        spec.pathParams("first", "teachers", "second", "getSavedTeacherById", "third", userId);
+        response = given(spec).get("{first}/{second}/{third}");
+        response.then().statusCode(200)
+                .body("object.username", equalTo(createTeacherPojo.getUsername()))
+                .body("object.name", equalTo(createTeacherPojo.getName()))
+                .body("object.surname", equalTo(createTeacherPojo.getSurname()))
+                .body("object.email", equalTo(createTeacherPojo.getEmail()))
+                .body("object.gender", equalTo(createTeacherPojo.getGender()))
+                .body("object.birthPlace", equalTo(createTeacherPojo.getBirthPlace()))
+                .body("object.phoneNumber", equalTo(createTeacherPojo.getPhoneNumber()))
+                .body("object.ssn", equalTo(createTeacherPojo.getSocialSecurityNumber()))
+                .body("object.birthDay", equalTo(createTeacherPojo.getBirthday()))
+                .body("message", equalTo("Teacher successfully found"));
+
+        response.prettyPrint();
 
 
+
+
+    }
 
 }
+
 

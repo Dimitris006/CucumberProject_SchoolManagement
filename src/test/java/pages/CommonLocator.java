@@ -29,6 +29,11 @@ public class CommonLocator {
     @FindBy(xpath = "//button[(text()='Menu')]")
     public WebElement menuButton;
 
+    @FindBy(linkText = "Logout")
+    public WebElement logOutButton;
+
+    @FindBy(xpath = "//button[.='Yes']")
+    public WebElement yesButton;
 
     @FindBy(xpath = "//*[@id='offcanvasNavbar-expand-lg']/div[2]/div/a[11]")
     public WebElement guestUser;

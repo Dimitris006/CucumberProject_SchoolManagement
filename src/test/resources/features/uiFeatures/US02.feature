@@ -1,3 +1,4 @@
+
 @US02
 Feature: f
 
@@ -21,6 +22,6 @@ Feature: f
     And Open the Main menu
     And Click on the Guest User
     And Open the Guest user List
-    And Click on Delet button
+    And Click on Delete button
     Then Verify if the user is deleted
 

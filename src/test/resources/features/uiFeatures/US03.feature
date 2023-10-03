@@ -25,6 +25,7 @@ Feature:User should be able to send messages from contact page
     Then close the application
 
 
+
   @US03_TC03
   Scenario Outline:User sending message with invalid email
     And user clicks on contact link

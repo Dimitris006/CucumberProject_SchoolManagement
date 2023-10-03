@@ -26,6 +26,9 @@ public class ViceDean_LessonManagementPage {
     @FindBy(css = "#controlled-tab-example-tab-lessonsList")
     public WebElement lessonsTab;
 
+    @FindBy(xpath = "//button[.='Lessons']")
+    public WebElement lessonsTab1;
+
     //lesson Program in the /lesson site for ViceDean
     @FindBy(css = "#controlled-tab-example-tab-lessonProgram")
     public WebElement lessonProgram;

@@ -85,11 +85,11 @@ Feature: Admin should be able to create vice dean
     Then verify submit fails
 
   @US04_TC06
-  Scenario: date_of_birth_Field_Left_Empty
+  Scenario: date_of_birthgi_Field_Left_Empty
     And click menu button
     And click Dean Management Link
     And enter Name
-    And enter SurName
+    And enter Surname
     And enter Birth Place
     And select Female Gender
     And enter valid phone number

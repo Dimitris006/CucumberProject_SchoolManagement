@@ -6,12 +6,16 @@ import java.util.List;
 
 public class DBUtils {
 
+
     private static Connection connection;
     private static Statement statement;
     public static ResultSet resultSet;
     /**
      * DBUtils.createConnection(); -> to connect to the database
      */
+
+
+
 
     //This method establishes a connection with the ManagementOnSchool database and returns Connection data
     public static Connection connectToDatabase() {

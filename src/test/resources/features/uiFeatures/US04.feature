@@ -23,7 +23,6 @@ Feature: Admin should be able to create a dean
     And click submit button
     And verify dean created successfully confirmation message
 
-
   @US04_TC02
   Scenario: Name_Field_Left_Empty
     And click menu button

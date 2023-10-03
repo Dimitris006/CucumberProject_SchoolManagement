@@ -28,6 +28,7 @@ public class US02_StepDefs {
     CommonLocator commonLocator = new CommonLocator();
     Faker faker = new Faker();
 
+
     @Given("user goes to url")
     public void user_goes_to_url() {
 

@@ -7,7 +7,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 public class Authentication {
 
-    static   String url = ConfigReader.getProperty("authenticationURL");
+    public static   String url = ConfigReader.getProperty("authenticationURL");
     //admin
     public static String generateTokenAdmin(){
         Map<String, Object> body = new HashMap<>();
@@ -40,11 +40,39 @@ public class Authentication {
         Response response = given().contentType(ContentType.JSON).body(body).post(url);
         return response.jsonPath().getString("token");
     }
+
+
+    //please do not delete generateTokenDunkTeacher()
+    public static String generateTokenDunkTeacher() {
+        Map<String, Object> body = new HashMap<>();
+        body.put("username", "w.dunk");
+        body.put("password", "!Teacher.123");
+        Response response = given().contentType(ContentType.JSON).body(body).post(url);
+        return response.jsonPath().getString("token");
+    }
+
+
+    public static String generateTokenTeacherAnna() {
+        Map<String, Object> body = new HashMap<>();
+        body.put("username", ConfigReader.getProperty("teacherAnnaUserName"));
+        body.put("password", ConfigReader.getProperty("teacherAnnaPassword"));
+        Response response = given().contentType(ContentType.JSON).body(body).post(url);
+        return response.jsonPath().getString("token");
+    }
+
     //student
     public static String generateTokenStudent(){
         Map<String, Object> body = new HashMap<>();
         body.put("username",ConfigReader.getProperty("studentUserName"));
         body.put("password",ConfigReader.getProperty("studentPassword"));
+        Response response = given().contentType(ContentType.JSON).body(body).post(url);
+        return  response.jsonPath().getString("token");
+    }
+     //student info
+    public static String generateTokenStudentInfo(){
+        Map<String, Object> body = new HashMap<>();
+        body.put("username",ConfigReader.getProperty("studentInfoUserName"));
+        body.put("password",ConfigReader.getProperty("studentInfoPassword"));
         Response response = given().contentType(ContentType.JSON).body(body).post(url);
         return  response.jsonPath().getString("token");
     }

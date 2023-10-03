@@ -48,8 +48,8 @@ public class Api_US03_ContactMessageFaker_StepDefs extends BaseUrl {
     ContactMessagePojo expectedData;
 
     //-------------------- TC01 -----------------------
-    @Given("user sends post request to send message from contact page")
-    public void user_sends_post_request_to_send_message_from_contact_page() {
+    @Given("send post request to send message from contact page")
+    public void send_post_request_to_send_message_from_contact_page() {
         //Set the url
         spec.pathParams("first", "contactMessages", "second", "save");
 

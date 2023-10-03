@@ -1,5 +1,5 @@
 @US21
-Feature:student choose lesson management panel
+Feature:student choose lesson from management panel
   Background:Go_to_Homepage
     Given user navigates to "https://managementonschools.com/"
     And user clicks on login link
@@ -17,7 +17,6 @@ Feature:student choose lesson management panel
     Then close the application
 
   @US21_TC02
-
   Scenario: Students choose lesson with same day and time
     Then verify Teacher, Day, Start Time and Stop Time are visible
     And user selects a lesson

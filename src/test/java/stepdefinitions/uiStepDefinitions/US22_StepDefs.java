@@ -24,7 +24,7 @@ public class US22_StepDefs {
     Response response;
     private static Integer adminID;
 
-    @Given("verify admin created successfully confirmation message")
+   @Given("verify admin created successfully confirmation message")
     public void verify_admin_created_successfully_confirmation_message() {
         WaitUtils.waitForVisibility(commonLocator.confirmationMessage, 5);
         assertTrue(commonLocator.confirmationMessage.getText().contains("Admin saved"));

@@ -1,30 +1,53 @@
 package stepdefinitions.uiStepDefinitions;
 
 import com.github.javafaker.Faker;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import org.junit.Assert;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.FindBy;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import pages.CommonLocator;
-import pages.CreateStudentPage;
 import pages.DeanCreatePage;
-import utilities.Driver;
 import utilities.JSUtils;
 import utilities.WaitUtils;
-
+import utilities.DBUtils;
+import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import static base_url.BaseUrl.spec;
+import static io.restassured.RestAssured.given;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static stepdefinitions.uiStepDefinitions.CommonStepDefs.*;
+
 
 public class US04_StepDefs {
 
+
+    public Statement statement;
+    Connection connection;
+
+    Response response;
+    ResultSet resultSet;
+
     Faker faker = new Faker();
+    public static String deanbirth_day;
+    public static String fakerdeanDateOfBirth;
     CommonLocator commonLocator = new CommonLocator();
 
-    DeanCreatePage deanCreatePage=new DeanCreatePage();
+    DeanCreatePage deanCreatePage = new DeanCreatePage();
 
+    public US04_StepDefs() throws SQLException {
+    }
 
+    @Then("enter dean date of birth")
+    public void enter_dean_date_of_birth() {
+
+        deanbirth_day = "25-05-1988";
+        commonLocator.dateOfBirth.sendKeys(deanbirth_day);
+
+        WaitUtils.waitFor(2);
+    }
 
     @Given("click Dean Management Link")
     public void click_Dean_Management_Link() {
@@ -45,54 +68,132 @@ public class US04_StepDefs {
         assertTrue(commonLocator.confirmationMessage.getText().contains("Dean saved"));
     }
 
-    @And("verify dean number created automatically")
-    public void verifyDeanNumberCreatedAutomatically() {
+
+    //DB
+
+
+    @Given("connect to dean database")
+    public void connect_to_dean_database() throws SQLException {
+
+        connection = DriverManager.getConnection("jdbc:postgresql://managementonschools.com:5432/school_management", "select_user", "43w5ijfso");
     }
 
 
-    @And("verify dean number uncreated automatically")
-    public void verifyDeanNumberUnCreatedAutomatically() {
+    @Given("get dean Data by username")
+    public void get_dean_Data_by_username() throws SQLException {
+        String query = "select * from dean where username = '" + fakerUsername + "'";
+        // String query = "select * from dean where username = '" + username + "'";
+        resultSet = DBUtils.executeQuery(query);
+        resultSet.next();
+
     }
 
-//    @And("enter username {string}")
-//    public void enterUsername(String username) {
-//        commonLocator.usernameField.sendKeys(faker.name().firstName());
+    @Then("validate dean created on db")
+    public void validate_dean_created_on_db() throws SQLException, ParseException {
+
+        String actualUsername = resultSet.getString("username");
+        String actualSSN = resultSet.getString("ssn");
+        String actualBirth_day = resultSet.getString("birth_day");
+        String actualBirth_place = resultSet.getString("birth_place");
+        String actualGender = resultSet.getString("gender");
+        String actualName = resultSet.getString("name");
+        String actualSurname = resultSet.getString("surname");
+        String actualPhoneNumber = resultSet.getString("phone_number");
+        SimpleDateFormat expectedDateFormat= new SimpleDateFormat("dd-MM-yyyy");
+        String formattedExpectedDate = expectedDateFormat.format(expectedDateFormat.parse("25-05-1988"));
+        String formattedActualDate= new SimpleDateFormat("dd-MM-yyyy").format(new SimpleDateFormat("yyyy-MM-dd").parse(actualBirth_day));
+
+        assertEquals(formattedExpectedDate, formattedActualDate);
+        assertEquals(fakerUsername, actualUsername);
+        assertEquals(fakeSsn, actualSSN);
+        assertEquals(fakerName, actualName);
+        assertEquals(fakerSurname, actualSurname);
+        //assertEquals(formattedDate, actualBirth_day);
+        assertEquals(fakerBirthPlace, actualBirth_place);
+        assertEquals(fakerFormattedPhoneNumber, actualPhoneNumber);
+        assertEquals("1", actualGender);
+
+
+    }
+
+
+//API
+
+
+    @Given("send get All dean request on API")
+    public void send_get_All_dean_request_on_API() {
+        https://managementonschools.com/app/dean/getAll
+        spec.pathParams("first", "dean", "second", "getAll");
+        response = given(spec).get("{first}/{second}");
+        response.prettyPrint();
+    }
+
+    @Then("validate that dean created")
+    public void validate_that_dean_created() throws ParseException {
+
+
+//  JsonPath jsonPath = response.jsonPath();
+//        List<String> deanData = jsonPath.getList("findAll{it.username=='dierdre.graham'}");
+//        String actUsername = jsonPath.getList("findAll{it.username=='dierdre.graham'}.username").get(0).toString();
+//        System.out.println("deanData = " + deanData);
+//        assertEquals("dierdre.graham", actUsername);
+
+
+        JsonPath jsonPath = response.jsonPath();
+        List<String> deanData = jsonPath.getList("findAll{it.username=='" + fakerUsername + "'}");
+        System.out.println("deanData = " + deanData);
+        String actUsername = jsonPath.getList("findAll{it.username=='" + fakerUsername + "'}.username").get(0).toString();
+        String actName = jsonPath.getList("findAll{it.username=='"+fakerUsername+"'}.name").get(0).toString();
+        String actSurname = jsonPath.getList("findAll{it.username=='"+fakerUsername+"'}.surname").get(0).toString();
+        String actBirthDay = jsonPath.getList("findAll{it.username=='"+fakerUsername+"'}.birthDay").get(0).toString();
+          SimpleDateFormat expectedDateFormat= new SimpleDateFormat("dd-MM-yyyy");
+          String formattedExpectedDate = expectedDateFormat.format(expectedDateFormat.parse("25-05-1988"));
+          String formattedActualDate= new SimpleDateFormat("dd-MM-yyyy").format(new SimpleDateFormat("yyyy-MM-dd").parse(actBirthDay));
+
+
+        String actBirthPlace = jsonPath.getList("findAll{it.username=='"+fakerUsername+"'}.birthPlace").get(0).toString();
+        String actPhoneNumber = jsonPath.getList("findAll{it.username=='"+fakerUsername+"'}.phoneNumber").get(0).toString();
+        String actGender = jsonPath.getList("findAll{it.username=='"+fakerUsername+"'}.gender").get(0).toString();
+        String actSsn = jsonPath.getList("findAll{it.username=='"+fakerUsername+"'}.ssn").get(0).toString();
+
+
+
+        assertEquals(200, response.statusCode());
+        assertEquals(formattedExpectedDate, formattedActualDate);
+        assertEquals(fakerUsername, actUsername);
+        assertEquals(fakeSsn, actSsn);
+        assertEquals(fakerName, actName);
+        assertEquals(fakerSurname, actSurname);
+        //assertEquals(formattedDate, actBirthDay);
+        assertEquals(fakerBirthPlace, actBirthPlace);
+        assertEquals(fakerFormattedPhoneNumber, actPhoneNumber);
+        assertEquals("FEMALE", actGender);
+
+
+
+//    @Then("get deanID from API")
+//    public void get_dean_id_from_api() {
+//        String deanID_String = response.jsonPath().getList("findAll{it.username=='" + deanUserName + "'}.id").get(0).toString();
+//        userId = Integer.parseInt(deanID_String);
+//        System.out.println("deanID = " + userId);
 //    }
 
-//   ?? @Then("enter dean username")
-//    public void enter_dean_username() {
-//        DeanUserName = faker.name().username();
-//        commonLocator.usernameField.sendKeysDeanUserName);
+//
+//    @And("enter username for dean")
+//    public void enterUsernameForDean() {
+//        do {
+//            fakeUsername = faker.name().username();
+//        } while (fakeUsername.length() <= 4);
+//
+//        commonLocator.usernameField.sendKeys(fakeUsername);
 //        WaitUtils.waitFor(2);
-//    }
-//
-//    @And("enter password {string}")
-//    public void enterPassword(String password) {
-//        commonLocator.passwordField.sendKeys(password);
-//    }
-
-
-//    @Then("verify dean number created automatically")
-//    public void verify_dean_number_created_automatically() {
-//        WaitUtils.waitFor(5);
-//        JSUtils.scrollIntoViewJS(deanCreatePage.lastRow);
-//        WaitUtils.waitFor(5);
-//        String lastRow = deanCreatePage.lastRow.getText();
-//        System.out.println("lastRow = " + lastRow);
-//        Assert.assertTrue(lastRow.contains(DeanUserName));
-//        String numberText = CreateStudentPage.firstColumnInLastRow.getText();
-//
-//        // Perform assertion to check if it's a 4-digit number
-//        if (numberText.matches("\\d{4}")) {
-//            System.out.println("Assertion passed: The number is a 4-digit number");
-//        } else {
-//            System.out.println("Assertion failed: The number is not a 4-digit number");
-//        }
-//
+//        System.out.println("fakeUsername = " + fakeUsername);
 //    }
 
 
     }
+}
+
 
 
 

@@ -90,8 +90,8 @@ public class CommonStepDefs {
             // Handle any parsing errors here
             e.printStackTrace();
         }
-       fakerDateOfBirth = "01/05/1990";
-       commonLocator.dateOfBirth.sendKeys(fakerDateOfBirth);
+       fakerDateOfBirth = "1990-05-01";
+       //commonLocator.dateOfBirth.sendKeys(fakerDateOfBirth);
 
 //        SimpleDateFormat inputDateFormat = new SimpleDateFormat("dd-MM-yyyy");
 //        try {
@@ -143,6 +143,12 @@ public class CommonStepDefs {
         commonLocator.menuButton.click();
     }
 
+    @Given("click logout button")
+    public void click_logout_button() {
+
+        commonLocator.logOutButton.click();
+        JSUtils.clickWithTimeoutByJS(commonLocator.yesButton);
+    }
 
     @Given("enter Name")
     public void enter_Name() {

@@ -23,10 +23,10 @@ Feature: Admins should be able to be registered in the system
 
   @Database_Test
   Scenario: Validate registered user on database
-    Given connect to database
+#    Given connect to database
     When get admin user via username
     Then validate username name phone_number ssn surname birth_place date_of_birth password
-    And close the connection
+#    And close the connection
 
   @US22_API @Api_admin
   Scenario: Validate created admin on API
