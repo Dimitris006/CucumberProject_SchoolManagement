@@ -12,7 +12,7 @@ Feature: Admins should be able to be registered in the system
     And enter Surname
     And enter Birth Place
     And select Female Gender
-    Then enter date of birth
+    Then enter your date of birth
     And enter valid phone number
     And enter valid SSN
     And enter username

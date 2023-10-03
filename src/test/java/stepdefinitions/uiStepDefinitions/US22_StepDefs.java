@@ -7,6 +7,10 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import utilities.WaitUtils;
 import pages.CommonLocator;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import static base_url.BaseUrl.spec;
 import static io.restassured.RestAssured.given;
@@ -20,7 +24,6 @@ public class US22_StepDefs {
     Response response;
     private static Integer adminID;
 
-
     @Given("verify admin created successfully confirmation message")
     public void verify_admin_created_successfully_confirmation_message() {
         WaitUtils.waitForVisibility(commonLocator.confirmationMessage, 5);
@@ -33,6 +36,7 @@ public class US22_StepDefs {
         response = given(spec).get("{first}/{second}");
         response.prettyPrint();
     }
+
 
     @Then("validate admin data")
     public void validate_admin_data() {
@@ -79,5 +83,28 @@ public class US22_StepDefs {
         assertEquals(200, response.statusCode());
         assertTrue(response.asString().contains("Admin deleted Successful"));
 
+    }
+
+    @Then("enter your date of birth")
+    public void enter_your_date_of_birth() {
+        dateOfBirth = "01-05-1990";
+        reverseDateOfBirth = "1990-05-01";
+//        commonLocator.dateOfBirth.sendKeys(dateOfBirth);
+//        SimpleDateFormat inputDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+//        try {
+//            // Parse the original date into a Date object
+//            Date date = inputDateFormat.parse(dateOfBirth);
+//
+//            // Create a new SimpleDateFormat object to format the date in "yyyy-MM-dd" format
+//            SimpleDateFormat outputDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//
+//            // Format the date in the desired format
+//            formattedDate = outputDateFormat.format(date);
+//        } catch (ParseException e) {
+//            // Handle any parsing errors here
+//            e.printStackTrace();
+//        }
+        fakerDateOfBirth = "01/05/1990";
+        commonLocator.dateOfBirth.sendKeys(fakerDateOfBirth);
     }
 }
